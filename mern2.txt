@@ -1,0 +1,255 @@
+login.js
+import React from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+function Login(){
+    const user = {
+        username : "",
+        password : ""
+    };
+
+    const r = useNavigate();
+
+    const LoginUser = () => {
+        axios.post("/api/login", user).then((res) => {
+            if((res.data.data).length === 1)
+            {
+                r("/fetch", {replace:true});
+            }
+            else
+            {
+                console.log("Wrong");
+            }
+        });
+    }
+
+    return (
+        <div>
+            <center>
+                <h1>Login</h1><br />
+                <input placeholder="Enter Name" onChange={(e) => (user.username = e.target.value)} /><br /><br />
+                <input type="password" placeholder="Enter Password" onChange={(e) => (user.password = e.target.value)} /><br /><br />
+                <button onClick={ LoginUser }>Login Heare</button><br /><br />
+                <p>Not have an account ? <a href="/">Register Here</a></p>
+            </center>
+        </div>
+    );
+}
+
+export default Login;
+
+update.js
+import React from 'react';
+import axios from "axios";
+import { useState } from 'react';
+
+console.log("update PAge");
+function Update(user) {
+    
+    const [username, setuname] = useState(user.username)
+    // const [password, setpass] = useState(user.password)
+    // const [name, setname] = useState(user.name)
+    // const [age, setage] = useState(user.age)
+    console.log(username);
+
+    const data = {
+        username:username,
+        // password: password,
+        // name: name,
+        // age: age,
+      };
+    
+    const updateuser = () => {
+        axios.put("/update", data).then((res) => console.log(res.data));
+        alert("Profile Updated Successfully")
+         console.log(data);
+    }
+    return (
+        <div align="center">
+            <div style={{marginTop: '30px'}}>
+                <h3>Update Page</h3>
+            </div>
+            <div>
+                User-Name: <input style={{padding: "5px",margin:"5px"}} onChange={(e) => setuname(e.target.value)} type="text" placeholder="Enter UserName" />
+            </div>
+            {/* <div>
+                Name: <input style={{padding: "5px",margin:"5px"}} onChange={(val) => { setdata({ ...data, name: val.target.value }) }} type="text" placeholder="Enter Name"/>
+            </div>    
+            <div>
+                Age: <input style={{padding: "5px",margin:"5px"}} onChange={(val) => { setdata({ ...data, age: val.target.value }) }} type="text" placeholder="Enter Age"/>
+            </div>     */}
+            <div>
+                <button style={{padding: "5px",margin:"5px",borderRadius: "5px"}} onClick={() => { updateuser() }} type="Submit" value={"Update"}>Update</button>
+            </div>
+        </div>
+    );
+}
+
+export default Update;
+
+list.js
+  
+import React from 'react';
+import axios from "axios";
+
+
+
+function List  () {
+
+    React.useEffect(()=>{
+    fatch();
+    },[])
+
+
+
+    const [data, setData] = React.useState([]);
+  
+    const fatch = () => {
+        axios.post("/disp").then((res) => {
+        setData(res.data.data)
+        console.log(data)
+        })
+    }
+
+    const deleteData = (id) => {
+        console.log(id);
+        axios.delete(`/delete/${id}`).then((res) => {
+            setData(res.data.data)
+            console.log(data)
+        })
+    }
+
+    
+
+  return (
+    <div align="center">
+      <div style={{marginTop: '30px'}}>
+        <table style={{border: '1px solid black',padding:'15px'}} >
+            <tr style={{border: '1px solid black',padding:'105px'}}>
+                <th style={{border: '1px solid black',padding:'15px'}}>Index</th>
+                <th style={{border: '1px solid black',padding:'15px'}}>UserName</th>
+                <th style={{border: '1px solid black',padding:'15px'}}>Password</th>
+                <th style={{border: '1px solid black',padding:'15px'}}>Name</th>
+                <th style={{border: '1px solid black',padding:'15px'}}>Age</th>
+                <th style={{border: '1px solid black',padding:'15px'}}>Edit</th>
+                <th style={{border: '1px solid black',padding:'15px'}}>Delete</th>
+            </tr>
+            {data.map((item,index) => (
+                <tr key={item.username}>
+                    <td style={{border: '1px solid black',padding:'15px'}}>{index + 1}</td>
+                    <td style={{border: '1px solid black',padding:'15px'}}>{item.username}</td>
+                    <td style={{border: '1px solid black',padding:'15px'}}>{item.password}</td>
+                    <td style={{border: '1px solid black',padding:'15px'}}>{item.name}</td>
+                    <td style={{border: '1px solid black',padding:'15px'}}>{item.age}</td>
+                    <td style={{border: '1px solid black',padding:'15px'}}><a href='/update'>Edit</a></td>
+                    {/* <td style={{border: '1px solid black',padding:'15px'}}><button onClick={ () => selectUser(item.username) }>update</button></td> */}
+                    <td style={{border: '1px solid black',padding:'15px'}}><button onClick={ () => deleteData(item.username) }>Delete</button></td>
+
+                </tr>
+            ))}
+            </table>
+        </div>   
+
+                <div>
+                    {data.map((item) =>(
+                        <input value={item.username}></input>
+                    ))}
+                </div>
+
+    </div>
+  );
+
+};
+export default List;
+
+fetch.js
+import axios from "axios";
+
+function Featch() {
+  
+  //fetch user
+  const fetchusers=()=>{
+    axios.get("/api/list").then((res)=>console.log("data",res));
+  };
+
+  return (
+    <div>
+      <h1>All Data</h1>
+      <button onClick={fetchusers}>Fetch user</button>
+        
+        <div>
+          <table border="2px">
+              <tr>
+                <td>UserName</td>
+                <td>Password</td>
+                <td>Name</td>
+                <td>Age</td>
+                <td>Edit</td>
+                <td>Delete</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+          </table>
+        </div>
+    </div>
+  );
+}
+export default Featch;
+
+delete.js
+import axios from "axios";
+
+function Delete() {
+
+    var deletename = "";
+    const deleteuser = () => {
+            axios.delete("/api/delete/" + deletename).then((res) => console.log(res.data));
+    };
+
+    return (
+        <div>
+        <input placeholder="username" onChange={ (e) => (deletename  = e.target.value) } />
+        <button type="Submit" onClick={deleteuser}>Delete</button>
+        </div>
+    );
+}
+export default Delete;
+
+
+demo.js
+import React from 'react';
+import axios from "axios";
+import { useState } from "react";
+ function Demo()
+ {
+        const [users,setUsers] = useState([]);
+
+        const fetchData = () => {
+            fetch("https://jsonplaceholder.typicode.com/users")
+              .then(response => {
+                return response.json()
+              })
+              .then(data => {
+                setUsers(data)
+              })
+        }
+        return(
+            <div>
+                <button onClick={fetchData}>Fetch Users</button>
+                {users.length > 0 && (
+                    <ul>
+                    {users.map(user => (
+                        <li key={user.id}>{user.name}</li>
+                        // <input type="text" value="">{user.name}</input>
+                    ))}
+                    </ul>
+                )}
+                </div>
+        );
+ }
+ export default Demo;

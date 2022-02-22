@@ -1,0 +1,134 @@
+server.js
+const express = require('express');
+const app = express();
+app.use(express.json());
+const port = 4000;
+const mongoose = require("mongoose");
+const userModel = require("./user");
+
+mongoose
+    .connect("mongodb://localhost:27017/userdb")
+    .then(() => console.log("MongoDB Connected !!"));
+
+//register user
+app.post("/reg", (req, res) => {
+    const newUser = req.body;
+    userModel.create(newUser);
+    return res.json({ data : "Register Successfully" });
+});
+
+//login user
+app.post("/api/login", async(req, res) => {
+    const uname = req.body.username;
+    const pwd = req.body.password;
+    const loginUser = await userModel.find({ username : uname, password : pwd });
+    if (loginUser) {
+        return res.json({ data : loginUser });
+    } else {
+        return res.json({ data : "Username or password Wrong !!" });
+    }
+});
+
+app.delete("/delete/:id",async(req,res)=>{
+    console.log(req.params.id);
+    await userModel.findOneAndDelete({username: req.params.id});
+    const list = await userModel.find();
+    return res.json({data: list});
+})
+
+//Featch user
+app.get("/api/list",async(req,res)=>{
+    const list = req.body
+    const userList = await userModel.find(list);
+    if(userList.length==0)
+    {
+        return res.send({data:"no user found"});
+    }
+    return res.send({data:userList});
+});
+
+//disp Data
+app.post("/disp",async(req,res)=>{
+    const list = await userModel.find();
+    return res.json({data: list});
+});
+
+app.listen(port, () => console.log(`server running on port 4000`));
+
+user.js
+const mongooose = require('mongoose');
+
+const userSchema = mongooose.Schema({
+    username : String,
+    password : String,
+    name : String,
+    age : Number
+});
+
+const userModel = mongooose.model("user", userSchema, "user");
+
+module.exports = userModel;
+
+frontend
+app.js
+import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Reg from './component/reg';
+import Login from './component/login';
+import Delete from './component/delete';
+import Featch from './component/Fetch';
+import List from './component/list';
+import Update from './component/update';
+import Demo from './component/demo';
+
+function App() {
+  return (
+    <Router>
+        <Routes>
+          <Route exact path="/" element={<Reg/>}></Route>
+          <Route exact path="/login" element={<Login/>}></Route>
+          <Route exact path="/delete" element={<Delete/>}></Route>
+          <Route exact path="/fetch" element={<Featch/>}></Route>
+          <Route exact path="/list" element={<List/>}></Route>
+          <Route exact path="/update" element={<Update/>}></Route>
+          <Route exact path="/demo" element={<Demo/>}></Route>
+        </Routes>
+    </Router>
+  );
+}
+
+export default App;
+
+component
+reg.js
+import React from 'react';
+import axios from 'axios';
+
+function Reg() {
+    const user = {
+        username : "",
+        password : "",
+        name : "",
+        age : 0
+    };
+
+    const RegisterUser = () => {
+        axios.post("/reg", user).then((res) => console.log(res.data));
+    }
+
+    return (
+        <div>
+            <center>
+            <h1>Register</h1><br />
+            <input placeholder='Enter Username' onChange={ (e) => (user.username = e.target.value) } /><br /><br />
+            <input type="password" placeholder='Enter Password' onChange={ (e) => (user.password = e.target.value) } /><br /><br />
+            <input placeholder='Enter Name' onChange={ (e) => (user.name = e.target.value) } /><br /><br />
+            <input placeholder='Enter Age' onChange={ (e) => (user.age = Number(e.target.value)) } /><br /><br />
+            <button onClick={ RegisterUser }>Register</button><br /><br />
+            </center>
+        </div>
+    );
+}
+
+export default Reg;
+
